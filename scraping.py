@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from time import sleep
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
@@ -10,7 +11,10 @@ cxn_str = f'mongodb+srv://auliakhoirunn123:{password}@cluster0.tzs7oma.mongodb.n
 client = MongoClient(cxn_str)
 db = client.dbsparta_plus_week3
 
-driver = webdriver.Chrome()
+
+#driver = webdriver.Chrome('chromedriver.exe')
+cService = webdriver.ChromeService(executable_path='E:\minggu 14 aulia sem 3\chromedriver.exe')
+driver = webdriver.Chrome(service = cService)
 driver.get("https://www.google.com")
 url = 'https://www.yelp.com/search?cflt=restaurants&amp;find_loc=San+Francisco%2C+CA'
 driver.get(url)
@@ -52,12 +56,12 @@ for _ in range(5):
         location = spans[-1].text
 
         geo_url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{location}.json?proximity={long},{lat}&access_token={access_token}"
-        geo_response = requests.get(geo_url)
-        geo_json = geo_response.json()
-        center = geo_json['features'][0]['center']    
-        print(name, ',', categories, ',', location, ',', link)
-
-        doc = {
+    geo_response = requests.get(geo_url)
+    geo_json = geo_response.json()
+    center = geo_json['features'][0]['center']    
+    print(name, ',', categories, ',', location, ',', center)
+    
+    doc = {
             'name': name,
             'categories': categories,
             'location': location,
@@ -65,10 +69,9 @@ for _ in range(5):
             'center': center,
         }
 
-        db.restaurants.insert_one(doc)
+    db.restaurants.insert_one(doc)
 
     start += 10
     driver.get(f'{url}&start={start}')
-    sleep(3)
 
 driver.quit()
